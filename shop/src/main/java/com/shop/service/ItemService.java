@@ -1,5 +1,6 @@
 package com.shop.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -7,11 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.shop.dto.ItemFormDto;
+import com.shop.dto.ItemImgDto;
 import com.shop.entity.Item;
 import com.shop.entity.ItemImg;
 import com.shop.repository.ItemImgRepository;
 import com.shop.repository.ItemRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -32,6 +35,7 @@ public class ItemService {
 			itemImg.setItem(item);
 			if(i==0) {
 				itemImg.setRepImgYn("Y");
+				itemImgService.saveItemImg(itemImg, itemImgFileList.get(i));
 			}
 			else {
 				itemImg.setRepImgYn("N");
@@ -42,5 +46,69 @@ public class ItemService {
 		return item.getId();
 		
 	}
+	
+	@Transactional(readOnly = true)
+	public ItemFormDto getItemDtl(Long itemId) {
+		List<ItemImg> itemImgList = itemImgRepository.findByItemIdOrderByIdAsc(itemId);
+		System.out.println("==============================="+itemImgList.size());
+		List<ItemImgDto> itemImgDtoList= new ArrayList<>();
+		for (ItemImg itemImg : itemImgList) {
+			ItemImgDto itemImgDto = ItemImgDto.of(itemImg);
+			itemImgDtoList.add(itemImgDto);
+		}
+		
+		Item item = itemRepository.findById(itemId).orElseThrow(EntityNotFoundException::new);
+		ItemFormDto itemFormDto = ItemFormDto.of(item);
+		itemFormDto.setItemImgDtoList(itemImgDtoList);
+		return itemFormDto;
+		
+	}
+	
+	public void updateItem(ItemFormDto itemFormDto, List<MultipartFile> itemImgFileList) {
+		Item item = itemRepository.findById(itemFormDto.getId()).orElseThrow(EntityNotFoundException::new);
+		item.updateItem(itemFormDto);
+		List<Long> itemImgIds = itemFormDto.getItemImgIds();
+		for(int i=0; i<itemImgFileList.size(); i++) {
+			itemImgService.updateItemImg(itemImgIds.get(i), itemImgFileList.get(i));
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 }
