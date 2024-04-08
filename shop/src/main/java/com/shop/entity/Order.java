@@ -38,6 +38,19 @@ public class Order extends BaseEntity {
 	private OrderStatus orderStatus;
 	@OneToMany(mappedBy = "order", cascade=CascadeType.ALL, orphanRemoval = true, fetch=FetchType.LAZY)
 	private List<OrderItem> orderItems = new ArrayList<OrderItem>();
+	
+	public void addOrderItem(OrderItem orderItem) {
+		orderItems.add(orderItem);
+		orderItem.setOrder(this);
+	}
+	
+	public static Order createOrder(Member member, List<OrderItem> orderItemList) {
+		
+	}
+	
+	public int getTotalPrice() {
+		
+	}
 }
 
 

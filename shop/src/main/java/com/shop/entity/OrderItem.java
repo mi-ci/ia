@@ -1,7 +1,5 @@
 package com.shop.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,4 +28,19 @@ public class OrderItem extends BaseEntity{
 	
 	private int orderPrice;
 	private int count;
+	
+	
+	
+	public static OrderItem createdOrderItem(Item item, int count) {
+		OrderItem orderItem = new OrderItem();
+		orderItem.setItem(item);
+		orderItem.setCount(count);
+		orderItem.setOrderPrice(item.getPrice());
+		item.removeStock(count);
+		return orderItem;
+		}
+
+	public int getTotalPrice() {
+		return orderPrice*count;
+	}
 }

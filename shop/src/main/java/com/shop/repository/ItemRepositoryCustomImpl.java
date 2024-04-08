@@ -13,8 +13,11 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shop.constant.ItemSellStatus;
 import com.shop.dto.ItemSearchDto;
+import com.shop.dto.MainItemDto;
+import com.shop.dto.QMainItemDto;
 import com.shop.entity.Item;
 import com.shop.entity.QItem;
+import com.shop.entity.QItemImg;
 
 import jakarta.persistence.EntityManager;
 
@@ -80,6 +83,22 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom{
         long total = results.getTotal();
         
         return new PageImpl<>(content, pageable, total); //--8
+	}
+	
+	private BooleanExpression itemNmLike(String searchQuery) {
+		return StringUtils.isEmpty(searchQuery) ? null : QItem.item.itemNm.like("%" + searchQuery + "%");
+	}
+	
+	@Override
+	public Page<MainItemDto> getMainItemPage(ItemSearchDto itemSearchDto, Pageable pageable) {
+		QItem item = QItem.item;
+		QItemImg itemImg = QItemImg.itemImg;
+		QueryResults<MainItemDto> results = queryFactory.select(new QMainItemDto(item.id, item.itemNm, item.itemDetail, itemImg.imgUrl, item.price)).from(itemImg).join(itemImg.item, item).where(itemImg.repImgYn.eq("Y")).where(itemNmLike(itemSearchDto.getSearchQuery())).orderBy(item.id.desc()).offset(pageable.getOffset()).limit(pageable.getPageSize()).fetchResults();
+		List<MainItemDto> content = results.getResults();
+		long total = results.getTotal();
+	
+		
+		return new PageImpl<>(content, pageable, total);
 	}
 	
 }
